@@ -5,10 +5,14 @@ import javax.swing.JDialog;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import model.DAO;
@@ -17,15 +21,14 @@ import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
 import java.awt.Cursor;
 import javax.swing.JComboBox;
+import javax.swing.JButton;
+import javax.swing.DefaultComboBoxModel;
 
 public class Funcionarios extends JDialog {
 	private JTextField inputNome;
 	private JTextField inputEmail;
 	private JTextField inputLogin;
 	private JPasswordField inputSenha;
-	private JLabel imgCreate;
-	private JLabel imgUpdate;
-	private JLabel imgDelete;
 
 	public Funcionarios() {
 		setTitle("Funcionários");
@@ -73,27 +76,35 @@ public class Funcionarios extends JDialog {
 		inputSenha.setBounds(353, 124, 200, 20);
 		getContentPane().add(inputSenha);
 		
-		imgCreate = new JLabel("");
-		imgCreate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		imgCreate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/create.png")));
-		imgCreate.setBounds(304, 290, 65, 54);
-		getContentPane().add(imgCreate);
-		
-		imgUpdate = new JLabel("");
-		imgUpdate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		imgUpdate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/update.png")));
-		imgUpdate.setBounds(398, 290, 65, 54);
-		getContentPane().add(imgUpdate);
-		
-		imgDelete = new JLabel("");
-		imgDelete.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		imgDelete.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/delete.png")));
-		imgDelete.setBounds(488, 290, 65, 54);
-		getContentPane().add(imgDelete);
-		
 		inputPerfil = new JComboBox();
+		inputPerfil.setModel(new DefaultComboBoxModel(new String[] {"", "Administrador", "Gerencia", "Atendimento", "Suporte"}));
 		inputPerfil.setBounds(74, 196, 200, 22);
 		getContentPane().add(inputPerfil);
+		
+		JButton btnCreate = new JButton("");
+		btnCreate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btnCreate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/create.png")));
+		btnCreate.setBounds(235, 288, 89, 56);
+		getContentPane().add(btnCreate);
+		
+		getContentPane().add(btnCreate);
+		btnCreate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				adicionarFuncionario();	
+			}
+		});
+		
+		JButton btnUpdate = new JButton("");
+		btnUpdate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/update.png")));
+		btnUpdate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btnUpdate.setBounds(353, 288, 89, 56);
+		getContentPane().add(btnUpdate);
+		
+		JButton btnDelete = new JButton("");
+		btnDelete.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/delete.png")));
+		btnDelete.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btnDelete.setBounds(464, 288, 89, 56);
+		getContentPane().add(btnDelete);
 
 	}
 	
@@ -102,7 +113,7 @@ public class Funcionarios extends JDialog {
 	private JComboBox inputPerfil;
 	
 	private void adicionarFuncionario() {
-		String create = "insert into funcionario (nomeFunc, login, senha, perfil, email) values (?, ?, md5(?), ?, ?);";
+		String create = "insert into funcionario (nomeFunc, login, senha,perfil, email) values (?, ?, md5(?), ?, ?);";
 		
 		
 		try {
@@ -116,12 +127,25 @@ public class Funcionarios extends JDialog {
 			executarSQL.setString(1, inputNome.getText());
 			executarSQL.setString(2, inputLogin.getText());
 			executarSQL.setString(3, inputSenha.getText());
-			//Trocar o componente do perfil 
+			
+
+			executarSQL.setString(4, inputPerfil.getSelectedItem().toString());
+			
 			executarSQL.setString(5, inputEmail.getText());
+			
+			//Executar os comandos SQL e inserir o funcionamento no banco de dados
+			executarSQL.executeUpdate();
+			
+			conexaoBanco.close(); 
 		} 
 		
+		catch (SQLIntegrityConstraintViolationException error) {
+			JOptionPane.showMessageDialog(null, "Login em uso. \nEscolha outro nome de usuáio.");
+		}
+		
 		catch (Exception e) {
-						
+		   System.out.println(e);				
+			
 		}
 		
 	}

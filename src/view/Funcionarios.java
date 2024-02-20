@@ -7,8 +7,11 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLIntegrityConstraintViolationException;
 
 import javax.swing.JLabel;
@@ -16,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import model.DAO;
+import net.proteanit.sql.DbUtils;
 
 import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
@@ -23,6 +27,9 @@ import java.awt.Cursor;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 
 public class Funcionarios extends JDialog {
 	private JTextField inputNome;
@@ -42,11 +49,11 @@ public class Funcionarios extends JDialog {
 		getContentPane().add(nomeFunc);
 		
 		JLabel loginFunc = new JLabel("Login:");
-		loginFunc.setBounds(24, 127, 46, 14);
+		loginFunc.setBounds(24, 147, 46, 14);
 		getContentPane().add(loginFunc);
 		
 		JLabel senhaFunc = new JLabel("Senha:");
-		senhaFunc.setBounds(299, 127, 46, 14);
+		senhaFunc.setBounds(299, 147, 46, 14);
 		getContentPane().add(senhaFunc);
 		
 		JLabel emailFunc = new JLabel("E-mail:");
@@ -58,22 +65,33 @@ public class Funcionarios extends JDialog {
 		getContentPane().add(perfilFunc);
 		
 		inputNome = new JTextField();
-		inputNome.setBounds(74, 55, 479, 20);
+		inputNome.setBounds(74, 55, 427, 20);
 		getContentPane().add(inputNome);
 		inputNome.setColumns(10);
 		
+		
+		inputNome.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent e) {
+				buscarFuncionarioNaTabela();
+			}
+		});
+		
+		
+		
+		
+		
 		inputEmail = new JTextField();
 		inputEmail.setColumns(10);
-		inputEmail.setBounds(353, 197, 200, 20);
+		inputEmail.setBounds(353, 197, 149, 20);
 		getContentPane().add(inputEmail);
 		
 		inputLogin = new JTextField();
 		inputLogin.setColumns(10);
-		inputLogin.setBounds(74, 124, 200, 20);
+		inputLogin.setBounds(74, 144, 200, 20);
 		getContentPane().add(inputLogin);
 		
 		inputSenha = new JPasswordField();
-		inputSenha.setBounds(353, 124, 200, 20);
+		inputSenha.setBounds(353, 144, 149, 20);
 		getContentPane().add(inputSenha);
 		
 		inputPerfil = new JComboBox();
@@ -84,7 +102,7 @@ public class Funcionarios extends JDialog {
 		JButton btnCreate = new JButton("");
 		btnCreate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		btnCreate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/create.png")));
-		btnCreate.setBounds(235, 288, 89, 56);
+		btnCreate.setBounds(165, 288, 89, 56);
 		getContentPane().add(btnCreate);
 		
 		getContentPane().add(btnCreate);
@@ -97,20 +115,28 @@ public class Funcionarios extends JDialog {
 		JButton btnUpdate = new JButton("");
 		btnUpdate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/update.png")));
 		btnUpdate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		btnUpdate.setBounds(353, 288, 89, 56);
+		btnUpdate.setBounds(287, 288, 89, 56);
 		getContentPane().add(btnUpdate);
 		
 		JButton btnDelete = new JButton("");
 		btnDelete.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/delete.png")));
 		btnDelete.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		btnDelete.setBounds(464, 288, 89, 56);
+		btnDelete.setBounds(412, 288, 89, 56);
 		getContentPane().add(btnDelete);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(74, 74, 427, 62);
+		getContentPane().add(scrollPane);
+		
+		tblFuncionarios = new JTable();
+		scrollPane.setViewportView(tblFuncionarios);
 
 	}
 	
 	//Criar um objeto da classe DAO para estabelecer conexão com banco
 	DAO dao = new DAO();
 	private JComboBox inputPerfil;
+	private JTable tblFuncionarios;
 	
 	private void adicionarFuncionario() {
 		String create = "insert into funcionario (nomeFunc, login, senha,perfil, email) values (?, ?, md5(?), ?, ?);";
@@ -136,21 +162,78 @@ public class Funcionarios extends JDialog {
 			//Executar os comandos SQL e inserir o funcionamento no banco de dados
 			executarSQL.executeUpdate();
 			
-			conexaoBanco.close(); 
-		} 
+			JOptionPane.showMessageDialog(null, "Usuario cadstrado com sucesso");
+			
+			
+			
+			limparCampos();
+			conexaoBanco.close();
+		}
 		
 		catch (SQLIntegrityConstraintViolationException error) {
-			JOptionPane.showMessageDialog(null, "Login em uso. \nEscolha outro nome de usuáio.");
+			JOptionPane.showMessageDialog(null, "Login em uso. \nEscolha outro nome de usuário");
+			limparCampos();
+			
 		}
 		
 		catch (Exception e) {
-		   System.out.println(e);				
+			System.out.println(e);
 			
 		}
 		
 	}
 	
 	
+private void buscarFuncionarioNaTabela()	{
+	String readTabela = "select idFuncionario as ID, nomeFunc as Nome, email as Email from funcionario"
+	+ " where nomeFunc  like ?; ";		
+	
+
+	try {
+				//Estabelecer a conexão
+				Connection conexaoBanco = dao.conectar();
+				
+				//Preparar a execução dos comandos SQL
+				PreparedStatement executarSQL = conexaoBanco.prepareStatement(readTabela);
+				
+				//Substituir pelo ? conteudo da caixa de texto
+				executarSQL.setString(1, inputNome.getText() + "%");
+				
+				//Executar o comando SQL
+				ResultSet resultadoExecucao = executarSQL.executeQuery();
+				
+				//Exibir o resultado na tabela, utilização da biblioteca rs2xml para "popular"
+				//a tabela
+				tblFuncionarios.setModel(DbUtils.resultSetToTableModel(resultadoExecucao));
+				
+				conexaoBanco.close();
+				
+			}
+			
+			catch (Exception e) {
+				System.out.println(e);
+	
+		}
+}
+	
+	
+	
+private void setarCaixasTexto() {
+	//Criar uma variavel para receber a linha da tabela
+	//int setarLinha = tblFuncionarios.getSelectedRow();
+	
+}
+		
+	private void limparCampos() {
+		
+		inputNome.setText(null);
+		inputLogin.setText(null);
+		inputSenha.setText(null);
+		//inputPerfil.setSelectedItem(null);
+		inputPerfil.setSelectedIndex(-1);
+		inputEmail.setText(null);
+		
+	}	
 	
 	
 	

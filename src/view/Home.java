@@ -16,6 +16,7 @@ import javax.swing.JButton;
 import java.awt.Cursor;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import java.awt.Color;
 
 public class Home extends JDialog {
 	
@@ -41,6 +42,7 @@ public class Home extends JDialog {
 		getContentPane().setLayout(null);
 		
 		JButton btnUser = new JButton("");
+		btnUser.setBackground(new Color(240, 240, 240));
 		btnUser.setBorderPainted(false);
 		btnUser.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		btnUser.setIcon(new ImageIcon(Home.class.getResource("/img/user.png")));

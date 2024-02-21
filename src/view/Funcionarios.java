@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,6 +32,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import java.awt.Color;
 
 public class Funcionarios extends JDialog {
 	private JTextField inputNome;
@@ -65,7 +68,7 @@ public class Funcionarios extends JDialog {
 		getContentPane().add(perfilFunc);
 		
 		inputNome = new JTextField();
-		inputNome.setBounds(74, 55, 427, 20);
+		inputNome.setBounds(74, 55, 353, 20);
 		getContentPane().add(inputNome);
 		inputNome.setColumns(10);
 		
@@ -100,9 +103,11 @@ public class Funcionarios extends JDialog {
 		getContentPane().add(inputPerfil);
 		
 		JButton btnCreate = new JButton("");
+		btnCreate.setBorderPainted(false);
+		btnCreate.setBackground(new Color(240, 240, 240));
 		btnCreate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		btnCreate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/create.png")));
-		btnCreate.setBounds(165, 288, 89, 56);
+		btnCreate.setBounds(199, 288, 89, 56);
 		getContentPane().add(btnCreate);
 		
 		getContentPane().add(btnCreate);
@@ -113,23 +118,48 @@ public class Funcionarios extends JDialog {
 		});
 		
 		JButton btnUpdate = new JButton("");
+		btnUpdate.setBackground(new Color(240, 240, 240));
+		btnUpdate.setBorderPainted(false);
 		btnUpdate.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/update.png")));
 		btnUpdate.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		btnUpdate.setBounds(287, 288, 89, 56);
+		btnUpdate.setBounds(313, 288, 89, 56);
 		getContentPane().add(btnUpdate);
 		
 		JButton btnDelete = new JButton("");
+		btnDelete.setBackground(new Color(240, 240, 240));
+		btnDelete.setBorderPainted(false);
 		btnDelete.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/delete.png")));
 		btnDelete.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		btnDelete.setBounds(412, 288, 89, 56);
 		getContentPane().add(btnDelete);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(74, 74, 427, 62);
+		scrollPane.setBounds(74, 74, 353, 62);
 		getContentPane().add(scrollPane);
 		
 		tblFuncionarios = new JTable();
 		scrollPane.setViewportView(tblFuncionarios);
+		
+		
+		
+		 
+		
+		 
+		tblFuncionarios.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						setarCaixasTexto();
+					}
+				});
+		
+		
+		
+		
+		JButton btnNewButton = new JButton("");
+		btnNewButton.setBackground(new Color(240, 240, 240));
+		btnNewButton.setIcon(new ImageIcon(Funcionarios.class.getResource("/img/search.png")));
+		btnNewButton.setBorderPainted(false);
+		btnNewButton.setBounds(435, 58, 89, 23);
+		getContentPane().add(btnNewButton);
 
 	}
 	
@@ -220,10 +250,56 @@ private void buscarFuncionarioNaTabela()	{
 	
 private void setarCaixasTexto() {
 	//Criar uma variavel para receber a linha da tabela
-	//int setarLinha = tblFuncionarios.getSelectedRow();
-	
+	int setarLinha = tblFuncionarios.getSelectedRow();
+	inputNome.setText(tblFuncionarios.getModel().getValueAt(setarLinha, 1).toString());
+//inputEmail.setText(tblFuncionarios.getmodel().getValueAt(setarLinha,
+	//2).toString());
+
 }
 		
+
+//Criar método para  buscar funcionario pelo botão Pesquisar 
+private void bntBuscarFuncionario() {
+	String readBnt = "select * from funcionario where nomeFunc = ?;";
+
+
+try {
+	//Estabelecer a conexão
+	Connection conexaoBanco = dao.conectar();
+	
+
+	//preparar a execuçao do comando SQL 
+	PreparedStatement executarSQL =conexaoBanco.prepareStatement(readBnt);
+	
+	//Substituir  ponto de interrogação pelo conteudo da caixa de texto (nome)
+	executarSQL.setString(1,inputNome.getText());
+	
+//Executar o comando SQL e exibir o resultado no formulario funcionário (todos
+	//os seus dados)
+	ResultSet resultadoExecucao = executarSQL.executeQuery();
+	
+	if(resultadoExecucao.next()) {
+		//preencher os campos do formulário
+		inputLogin.setText(resultadoExecucao.getString(3));
+		inputSenha.setText(resultadoExecucao.getString(4));
+		inputPerfil.setSelectedItem(resultadoExecucao.getString(5));
+		//propositamente a professrora nao colocou o E-mail
+	}
+	
+	//professoura esqueceu de fechar a conexao
+}
+	catch(Exception e) {
+		String.out.println(e);
+	}
+}
+
+
+
+
+
+
+
+
 	private void limparCampos() {
 		
 		inputNome.setText(null);

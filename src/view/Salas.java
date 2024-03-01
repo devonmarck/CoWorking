@@ -35,6 +35,7 @@ public class Salas extends JDialog {
 	public JButton imgCreate;
 	public JButton imgUpdate;
 	public JButton imgDelete;
+	public JButton btnPesquisar;
 
 	public Salas() {
 		setTitle("Salas");
@@ -48,15 +49,15 @@ public class Salas extends JDialog {
 		getContentPane().add(tipoSala);
 
 		JLabel codSala = new JLabel("Código:");
-		codSala.setBounds(24, 268, 74, 14);
+		codSala.setBounds(376, 203, 57, 14);
 		getContentPane().add(codSala);
 
 		JLabel andarSala = new JLabel("Andar:");
-		andarSala.setBounds(392, 203, 57, 14);
+		andarSala.setBounds(24, 263, 57, 14);
 		getContentPane().add(andarSala);
 
 		JLabel ocupSala = new JLabel("Ocupação:");
-		ocupSala.setBounds(376, 268, 73, 14);
+		ocupSala.setBounds(376, 263, 73, 14);
 		getContentPane().add(ocupSala);
 
 		JLabel numSala = new JLabel("Número:");
@@ -65,7 +66,7 @@ public class Salas extends JDialog {
 
 		inputOcup = new JTextField();
 		inputOcup.setColumns(10);
-		inputOcup.setBounds(451, 265, 160, 20);
+		inputOcup.setBounds(451, 259, 160, 20);
 		getContentPane().add(inputOcup);
 
 		imgCreate = new JButton("");
@@ -119,12 +120,12 @@ public class Salas extends JDialog {
 		tblSalas = new JTable();
 		scrollPane.setViewportView(tblSalas);
 
-		JButton btnPesquisar = new JButton("");
+		btnPesquisar = new JButton("");
 		btnPesquisar.setEnabled(false);
 		btnPesquisar.setBackground(new Color(240, 240, 240));
 		btnPesquisar.setBorderPainted(false);
 		btnPesquisar.setIcon(new ImageIcon(Salas.class.getResource("/img/search.png")));
-		btnPesquisar.setBounds(265, 193, 43, 33);
+		btnPesquisar.setBounds(280, 193, 43, 33);
 		getContentPane().add(btnPesquisar);
 
 		inputID = new JTextField();
@@ -134,7 +135,7 @@ public class Salas extends JDialog {
 		inputID.setColumns(10);
 
 		// Deixar o campo ID invisível
-		inputID.setVisible(false);
+		inputID.setVisible(true);
 
 		inputCategoria = new JComboBox();
 		inputCategoria.setToolTipText("");
@@ -151,19 +152,28 @@ public class Salas extends JDialog {
 
 		inputCod = new JComboBox();
 		inputCod.setModel(new DefaultComboBoxModel(new String[] { "", "REU", "CONF", "EVENT", "PRIV" }));
-		inputCod.setBounds(95, 265, 160, 22);
+		inputCod.setBounds(451, 200, 160, 22);
 		getContentPane().add(inputCod);
 
 		inputAndar = new JComboBox();
 		inputAndar.setModel(
 				new DefaultComboBoxModel(new String[] { "", "Subsolo", "Térreo", "1º andar", "2º andar", "3º andar" }));
-		inputAndar.setBounds(451, 200, 160, 22);
+		inputAndar.setBounds(118, 259, 160, 22);
 		getContentPane().add(inputAndar);
 
 		inputNum = new JTextField();
-		inputNum.setBounds(95, 200, 160, 20);
+		inputNum.setBounds(118, 200, 160, 20);
 		getContentPane().add(inputNum);
 		inputNum.setColumns(10);
+
+		JLabel emReformaSala = new JLabel("Em reforma:");
+		emReformaSala.setBounds(24, 322, 96, 14);
+		getContentPane().add(emReformaSala);
+
+		inputEmReforma = new JComboBox();
+		inputEmReforma.setModel(new DefaultComboBoxModel(new String[] { "", "Sim", "Não" }));
+		inputEmReforma.setBounds(118, 318, 160, 22);
+		getContentPane().add(inputEmReforma);
 
 		btnPesquisar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -190,10 +200,11 @@ public class Salas extends JDialog {
 	private JComboBox inputCod;
 	private JComboBox inputAndar;
 	private JTextField inputNum;
+	private JComboBox inputEmReforma;
 
 	private void adicionarSala() {
-		String create = "insert into salas (andarSala, numeroSala, tipoSala, codigoSala, ocupacaoSala)"
-				+ " values (?, ?, ?, ?, ?);";
+		String create = "insert into salas (andarSala, numeroSala, tipoSala, codigoSala, ocupacaoSala, emReforma)"
+				+ " values (?, ?, ?, ?, ?, ?);";
 
 		// Validação da categoria (tipo) da sala
 		if (inputCategoria.getSelectedItem().equals("")) {
@@ -201,10 +212,10 @@ public class Salas extends JDialog {
 			inputCategoria.requestFocus();
 		}
 
-		// Validação do código da sala
-		else if (inputCod.getSelectedItem().equals("")) {
-			JOptionPane.showMessageDialog(null, "Código da sala obrigatório!");
-			inputCod.requestFocus();
+		// Validação do número da sala
+		else if (inputNum.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Número da sala obrigatório!");
+			inputNum.requestFocus();
 		}
 
 		// Validação do andar da sala
@@ -213,10 +224,16 @@ public class Salas extends JDialog {
 			inputAndar.requestFocus();
 		}
 
-		// Validação do número da sala
-		else if (inputNum.getText().isEmpty()) {
-			JOptionPane.showMessageDialog(null, "Número da sala obrigatório!");
-			inputNum.requestFocus();
+		// Validação da situação da sala (se está em reforma)
+		else if (inputEmReforma.getSelectedItem().equals("")) {
+			JOptionPane.showMessageDialog(null, "Informe se a sala está em reforma!");
+			inputEmReforma.requestFocus();
+		}
+
+		// Validação do código da sala
+		else if (inputCod.getSelectedItem().equals("")) {
+			JOptionPane.showMessageDialog(null, "Código da sala obrigatório!");
+			inputCod.requestFocus();
 		}
 
 		// Validação da ocupação máxima da sala
@@ -241,6 +258,7 @@ public class Salas extends JDialog {
 				executarSQL.setString(3, inputCategoria.getSelectedItem().toString());
 				executarSQL.setString(4, inputCod.getSelectedItem().toString());
 				executarSQL.setString(5, inputOcup.getText());
+				executarSQL.setString(6, inputEmReforma.getSelectedItem().toString());
 
 				// Executar os comandos SQL e inserir a sala no banco de dados
 				executarSQL.executeUpdate();
@@ -248,13 +266,20 @@ public class Salas extends JDialog {
 				JOptionPane.showMessageDialog(null, "Sala cadastrada com sucesso!");
 				limparCampos();
 
-				String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número from salas where tipoSala = ?;";
-				PreparedStatement executarReadSQL = conexaoBanco.prepareStatement(readTabela);
-				executarReadSQL.setString(1, inputCategoria.getSelectedItem().toString());
-				ResultSet resultadoExecucao = executarReadSQL.executeQuery();
-				tblSalas.setModel(DbUtils.resultSetToTableModel(resultadoExecucao));
+				String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número, emReforma as Reforma from salas where tipoSala = ?;";
 
-				// ((DefaultTableModel) tblSalas.getModel()).setRowCount(0);
+				// Preparar a execução dos comandos SQL
+				PreparedStatement executarLeituraTabela = conexaoBanco.prepareStatement(readTabela);
+
+				// Substituir o ? pelo conteúdo da caixa de texto
+				executarLeituraTabela.setString(1, inputCategoria.getSelectedItem().toString());
+
+				// Executar o comando SQL
+				ResultSet resultadoExecucao = executarLeituraTabela.executeQuery();
+
+				// Exibir o resultado na tabela, utilização da biblioteca rs2xml para "popular"
+				// a tabela
+				tblSalas.setModel(DbUtils.resultSetToTableModel(resultadoExecucao));
 
 				conexaoBanco.close();
 			}
@@ -270,7 +295,7 @@ public class Salas extends JDialog {
 	}
 
 	private void buscarSalaNaTabela() {
-		String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número from salas where tipoSala = ?;";
+		String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número, emReforma as Reforma from salas where tipoSala = ?;";
 
 		try {
 			// Estabelecer a conexão
@@ -309,6 +334,16 @@ public class Salas extends JDialog {
 		inputAndar.setSelectedItem(tblSalas.getModel().getValueAt(setarLinha, 1).toString());
 
 		inputNum.setText(tblSalas.getModel().getValueAt(setarLinha, 2).toString());
+
+		inputCod.setSelectedItem(null);
+		inputOcup.setText(null);
+		inputEmReforma.setSelectedItem(null);
+
+		inputCod.setEnabled(false);
+		inputAndar.setEnabled(false);
+		inputNum.setEditable(false);
+		inputOcup.setEditable(false);
+		inputEmReforma.setEnabled(false);
 	}
 
 	// Criar método para buscar sala pelo botão Pesquisar
@@ -334,13 +369,18 @@ public class Salas extends JDialog {
 			if (resultadoExecucao.next()) {
 				// Preencher os campos do formulário
 				inputID.setText(resultadoExecucao.getString(1));
-				// inputAndar.setSelectedItem(resultadoExecucao.getString(2));
 				inputCod.setSelectedItem(resultadoExecucao.getString(5));
 				inputOcup.setText(resultadoExecucao.getString(6));
+				inputEmReforma.setSelectedItem(resultadoExecucao.getString(7));
 
 				imgUpdate.setEnabled(true);
 				imgDelete.setEnabled(true);
 				imgCreate.setEnabled(false);
+				inputCod.setEnabled(true);
+				inputAndar.setEnabled(true);
+				inputNum.setEditable(true);
+				inputOcup.setEditable(true);
+				inputEmReforma.setEnabled(true);
 			}
 
 			conexaoBanco.close();
@@ -353,7 +393,7 @@ public class Salas extends JDialog {
 
 	private void atualizarSala() {
 		String update = "update salas set andarSala = ?, numeroSala = ?, tipoSala = ?, codigoSala = ?,"
-				+ " ocupacaoSala = ? where idSala = ?;";
+				+ " ocupacaoSala = ?, emReforma = ? where idSala = ?;";
 
 		// Validação da categoria (tipo) da sala
 		if (inputCategoria.getSelectedItem().equals("")) {
@@ -361,10 +401,10 @@ public class Salas extends JDialog {
 			inputCategoria.requestFocus();
 		}
 
-		// Validação do código da sala
-		else if (inputCod.getSelectedItem().equals("")) {
-			JOptionPane.showMessageDialog(null, "Código da sala obrigatório!");
-			inputCod.requestFocus();
+		// Validação do número da sala
+		else if (inputNum.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Número da sala obrigatório!");
+			inputNum.requestFocus();
 		}
 
 		// Validação do andar da sala
@@ -373,10 +413,16 @@ public class Salas extends JDialog {
 			inputAndar.requestFocus();
 		}
 
-		// Validação do número da sala
-		else if (inputNum.getText().isEmpty()) {
-			JOptionPane.showMessageDialog(null, "Número da sala obrigatório!");
-			inputNum.requestFocus();
+		// Validação da situação da sala (se está em reforma)
+		else if (inputEmReforma.getSelectedItem().equals("")) {
+			JOptionPane.showMessageDialog(null, "Informe se a sala está em reforma!");
+			inputEmReforma.requestFocus();
+		}
+
+		// Validação do código da sala
+		else if (inputCod.getSelectedItem().equals("")) {
+			JOptionPane.showMessageDialog(null, "Código da sala obrigatório!");
+			inputCod.requestFocus();
 		}
 
 		// Validação da ocupação máxima da sala
@@ -400,7 +446,8 @@ public class Salas extends JDialog {
 				executarSQL.setString(3, inputCategoria.getSelectedItem().toString());
 				executarSQL.setString(4, inputCod.getSelectedItem().toString());
 				executarSQL.setString(5, inputOcup.getText());
-				executarSQL.setString(6, inputID.getText());
+				executarSQL.setString(6, inputEmReforma.getSelectedItem().toString());
+				executarSQL.setString(7, inputID.getText());
 
 				// Executar os comandos SQL e atualizar a sala no banco de dados
 				executarSQL.executeUpdate();
@@ -408,12 +455,21 @@ public class Salas extends JDialog {
 				JOptionPane.showMessageDialog(null, "Dados da sala atualizados com sucesso!");
 				limparCampos();
 
-				String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número from salas where tipoSala = ?;";
-				PreparedStatement executarReadSQL = conexaoBanco.prepareStatement(readTabela);
-				executarReadSQL.setString(1, inputCategoria.getSelectedItem().toString());
-				ResultSet resultadoExecucao = executarReadSQL.executeQuery();
+				String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número, emReforma as Reforma from salas where tipoSala = ?;";
+
+				// Preparar a execução dos comandos SQL
+				PreparedStatement executarLeituraTabela = conexaoBanco.prepareStatement(readTabela);
+
+				// Substituir o ? pelo conteúdo da caixa de texto
+				executarLeituraTabela.setString(1, inputCategoria.getSelectedItem().toString());
+
+				// Executar o comando SQL
+				ResultSet resultadoExecucao = executarLeituraTabela.executeQuery();
+
+				// Exibir o resultado na tabela, utilização da biblioteca rs2xml para "popular"
+				// a tabela
 				tblSalas.setModel(DbUtils.resultSetToTableModel(resultadoExecucao));
-				
+
 				conexaoBanco.close();
 			}
 
@@ -446,17 +502,26 @@ public class Salas extends JDialog {
 
 			DefaultTableModel designTabela = (DefaultTableModel) tblSalas.getModel();
 
-			// Índice da linha que deseja excluir
-			int posicaoLinha = 0;
+			String readTabela = "select tipoSala as Categoria, andarSala as Andar, numeroSala as Número, emReforma as Reforma from salas where tipoSala = ?;";
 
-			if (posicaoLinha >= 0 && posicaoLinha < designTabela.getRowCount()) {
-				designTabela.removeRow(posicaoLinha);
-			}
+			// Preparar a execução dos comandos SQL
+			PreparedStatement executarLeituraTabela = conexaoBanco.prepareStatement(readTabela);
+
+			// Substituir o ? pelo conteúdo da caixa de texto
+			executarLeituraTabela.setString(1, inputCategoria.getSelectedItem().toString());
+
+			// Executar o comando SQL
+			ResultSet resultadoExecucao = executarLeituraTabela.executeQuery();
+
+			// Exibir o resultado na tabela, utilização da biblioteca rs2xml para "popular"
+			// a tabela
+			tblSalas.setModel(DbUtils.resultSetToTableModel(resultadoExecucao));
 
 			conexaoBanco.close();
 
 		} catch (Exception e) {
 			System.out.println(e);
+			JOptionPane.showMessageDialog(null, "Não é possível deletar essa sala pois encontra-se reservada!");
 		}
 	}
 
@@ -466,9 +531,12 @@ public class Salas extends JDialog {
 		inputAndar.setSelectedItem(null);
 		inputNum.setText(null);
 		inputOcup.setText(null);
+		inputEmReforma.setSelectedItem(null);
 		inputCategoria.requestFocus();
 		imgCreate.setEnabled(true);
 		imgDelete.setEnabled(false);
+		imgUpdate.setEnabled(false);
+		btnPesquisar.setEnabled(false);
 
 	}
 
